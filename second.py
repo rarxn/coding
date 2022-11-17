@@ -16,30 +16,6 @@ a2 = np.array([[1, 1, 1, 1, 1, 0, 0, 0],
                [0, 1, 0, 1, 0, 1, 0, 1]])
 
 
-# for i in range(a2.shape[0] - 2):
-#     for k in range(a2.shape[0] - 1):
-#         for j in range(k + 1, a2.shape[0]):
-#             a = a2[i] ^ a2[k] ^ a2[j]
-#             print(a)
-# print('')
-# for i in range(a2.shape[0] - 1):
-#     for j in range(i + 1, a2.shape[0]):
-#         a = a2[i] ^ a2[j]
-#         print(a)
-
-
-# def first(m):
-#     matrix = np.copy(m)
-#     matrix_size = matrix.shape
-#     for i in range(matrix_size[0]):
-#         for j in range(matrix_size[1]):
-#             if matrix[i][j] == 1:
-#                 if j != i:
-#                     change(matrix, j, i, 'column')
-#                 break
-#     return matrix
-
-
 def first(k, m):
     return np.concatenate((np.eye(k, dtype=int), m), axis=1)
 
@@ -49,27 +25,59 @@ def second(m):
     return np.concatenate((m[:, k:n], np.eye(n - k, dtype=int)), axis=0)
 
 
-def words_with_one_error(m):
-    matrix_size = m.shape
-    matrix = np.zeros((matrix_size[1]), dtype=int)
-    for i in range(matrix_size[0]):
-        for j in range(matrix_size[1]):
-            buf = np.copy(m[i])
-            buf[j] ^= 1
-            matrix = np.vstack((matrix, buf))
-    return matrix[1:, :]
+def ыродип_ырегин_create_x(n, k, d):
+    x = None
+    buff = list(itertools.product([0, 1], repeat=n - k))
+    buff = np.array([row for row in buff if not sum(row) < d - 1])
+    if buff.shape[0] < k:
+        return x
+
+    for c in itertools.combinations(range(buff.shape[0]), k):
+        flag = True
+        for i in range(2, d):
+            if flag:
+                for c_i in itertools.combinations(c, i):
+                    if np.sum(np.sum([buff[c_i[j]] for j in range(i)], axis=0) % 2) < d - i:
+                        flag = False
+                        break
+
+        if flag:
+            x = np.array([buff[i] for i in c])
+            break
+    print(x)
+    return x
 
 
-def fix_error(word, syndrome, H):
+def syndrome_table_one(H):
+    s = dict()
+    I = np.eye(H.shape[0], dtype=int)
+    for i in I:
+        s[np.array2string(i @ H % 2)] = i
+    return s
+
+
+def syndrome_table_two(H):
+    s = dict()
+    I = np.eye(H.shape[0], dtype=int)
+    combs = itertools.combinations(range(H.shape[0]), 2)
+    for i, j in combs:
+        I = np.vstack((I, I[i] ^ I[j]))
+    for i in I:
+        s[np.array2string(i @ H % 2)] = i
+    return s
+
+
+def fix_error(word, syndrome, table):
+    synd = np.array2string(syndrome)
     res = None
-    idx = -1
-    for i in range(len(H)):
-        if np.array_equal(syndrome, H[i]):
-            idx = i
-    if idx != -1:
-        res = np.copy(word)
-        res[idx] ^= 1
+    if synd in table:
+        res = table[synd] ^ word
     return res
+
+
+def print_dict(dct):
+    for d in dct.items():
+        print(f"{d[0]}:  {d[1]}")
 
 
 def main():
@@ -78,7 +86,7 @@ def main():
     print(f"\nПорождающая матрица:\n{G}")
     H = second(G)
     print(f"\nПроверочная матрица:\n{H}")
-    # words = words_with_one_error(G)
+    synd_table = syndrome_table_one(H)
 
     word = [1, 0, 0, 0]
     word = word @ G % 2
@@ -87,7 +95,7 @@ def main():
     print(f"кодовое слово с ошибкой:\n{word}")
     syndrome = word @ H % 2
     print(f"синдром:\n{syndrome}")
-    print(f"исправленное кодовое слово:\n{fix_error(word, syndrome, H)}")
+    print(f"исправленное кодовое слово:\n{fix_error(word, syndrome, synd_table)}")
 
     word = [1, 0, 0, 0]
     word = word @ G % 2
@@ -97,14 +105,46 @@ def main():
     print(f"кодовое слово с 2 ошибками:\n{word}")
     syndrome = word @ H % 2
     print(f"синдром:\n{syndrome}")
-    print(f"исправленное кодовое слово:\n{fix_error(word, syndrome, H)}")
+    print(f"исправленное кодовое слово:\n{fix_error(word, syndrome, synd_table)}")
 
     print('==================\n2часть\n==================')
-
-    G = first(4, a2)
+    n, k = 12, 4
+    x = ыродип_ырегин_create_x(n, k, 5)
+    G = first(k, x)
     print(f"\nПорождающая матрица:\n{G}")
     H = second(G)
     print(f"\nПроверочная матрица:\n{H}")
+    synd_table = syndrome_table_two(H)
+    # print_dict(synd_table)
+    word = [1, 0, 1, 1]
+    word = word @ G % 2
+    print(f"\nкодовое слово:\n{word}")
+    word[3] ^= 1
+    print(f"кодовое слово с 1 ошибкой:\n{word}")
+    syndrome = word @ H % 2
+    print(f"синдром:\n{syndrome}")
+    print(f"исправленное кодовое слово:\n{fix_error(word, syndrome, synd_table)}")
+
+    word = [1, 0, 1, 1]
+    word = word @ G % 2
+    print(f"\nкодовое слово:\n{word}")
+    word[3] ^= 1
+    word[4] ^= 1
+    print(f"кодовое слово с 2 ошибками:\n{word}")
+    syndrome = word @ H % 2
+    print(f"синдром:\n{syndrome}")
+    print(f"исправленное кодовое слово:\n{fix_error(word, syndrome, synd_table)}")
+
+    word = [1, 0, 1, 1]
+    word = word @ G % 2
+    print(f"\nкодовое слово:\n{word}")
+    word[3] ^= 1
+    word[4] ^= 1
+    word[5] ^= 1
+    print(f"кодовое слово с 3 ошибками:\n{word}")
+    syndrome = word @ H % 2
+    print(f"синдром:\n{syndrome}")
+    print(f"исправленное кодовое слово:\n{fix_error(word, syndrome, synd_table)}")
 
 
 if __name__ == '__main__':
