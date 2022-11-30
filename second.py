@@ -48,6 +48,19 @@ def ыродип_ырегин_create_x(n, k, d):
     return x
 
 
+def syndrome_table(H, mistakes):
+    s = dict()
+    I = np.eye(H.shape[0], dtype=int)
+    if mistakes != 1:
+        for k in range(2, mistakes + 1):
+            combs = itertools.combinations(range(H.shape[0]), k)
+            for c in combs:
+                I = np.vstack((I, np.sum([I[c[j]] for j in range(k)], axis=0) % 2))
+    for i in I:
+        s[np.array2string(i @ H % 2)] = i
+    return s
+
+
 def syndrome_table_one(H):
     s = dict()
     I = np.eye(H.shape[0], dtype=int)
