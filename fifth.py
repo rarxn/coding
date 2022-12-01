@@ -32,10 +32,9 @@ def Рид_Маллер_канон(r, m):
     return G
 
 
-def main():  # k-строки n-столбцы
-    matrix = Рид_Маллер_канон(1, 4)
-    print(matrix)
-    pass
+def main():
+    G = Рид_Маллер_канон(1, 4)
+    print(f"\nПорождающая матрица:\n{G}")
 
 
 if __name__ == '__main__':

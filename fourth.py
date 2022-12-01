@@ -91,7 +91,7 @@ def second(r, m, errors):
     H = np.array([[1, 1], [1, -1]])
     w = np.random.randint(2, size=G.shape[0])
     # w = np.array([1, 0, 1, 0, 1, 0, 1, 1])
-    print(f'слово {w}')
+    print(f'сообщение: {w}')
     w = w @ G % 2
     for kol_vo_oshibok in range(1, errors + 1):
         word = np.copy(w)
@@ -99,7 +99,7 @@ def second(r, m, errors):
         print(f"кодовое слово:\n{word}")
         for i in np.random.choice(word.size, kol_vo_oshibok, replace=False):
             word[i] ^= 1
-        print(f"кодовое слово с {kol_vo_oshibok} ошибок:\n{word}")
+        print(f"кодовое слово с {kol_vo_oshibok} ошибками:\n{word}")
         word[word == 0] = -1
         for i in range(1, m + 1):
             word = word @ h_i_m(H, i, m)
@@ -107,8 +107,8 @@ def second(r, m, errors):
         bin = np.binary_repr(index, m)[::-1]
         bin = ('1' if word[index] > 0 else '0') + bin
         print(f"w_{m} = {word}")
-        print(f"декодированное сообщение:{bin}")
         word = np.array(list(bin), dtype=int)
+        print(f"декодированное сообщение:{word}")
         word = word @ G % 2
         print(f"исправлено:{np.array_equal(w, word)}, исправленное слово:\n{word}")
 
