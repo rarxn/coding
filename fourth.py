@@ -1,6 +1,5 @@
 import numpy as np
 
-
 B = np.array([[1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1],
               [1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1],
               [0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1],
@@ -39,22 +38,28 @@ def first():
         syndrome = word @ H % 2
         fix = None
         n = len(syndrome)
-        for k in range(B.shape[0]):
-            if np.sum(syndrome) <= 3:
-                fix = np.append(syndrome, np.zeros(n, dtype=int))
-            elif np.sum(syndrome ^ B[k]) <= 2:
-                buf = np.zeros(n, dtype=int)
-                buf[k] = 1
-                fix = np.append(syndrome ^ B[k], buf)
-            elif np.sum(syndrome @ B % 2) <= 3:
-                buf = np.zeros(n, dtype=int)
-                fix = np.append(buf, syndrome @ B % 2)
-            elif np.sum((syndrome @ B % 2) ^ B[k]) <= 2:
-                buf = np.zeros(n, dtype=int)
-                buf[k] = 1
-                fix = np.append(buf, (syndrome @ B % 2) ^ B[k])
-            if fix is not None:
-                break
+
+        if np.sum(syndrome) <= 3:
+            fix = np.append(syndrome, np.zeros(n, dtype=int))
+        if fix is None:
+            for k in range(B.shape[0]):
+                if np.sum(syndrome ^ B[k]) <= 2:
+                    buf = np.zeros(n, dtype=int)
+                    buf[k] = 1
+                    fix = np.append(syndrome ^ B[k], buf)
+                if fix is not None:
+                    break
+        if fix is None and np.sum(syndrome @ B % 2) <= 3:
+            buf = np.zeros(n, dtype=int)
+            fix = np.append(buf, syndrome @ B % 2)
+        if fix is None:
+            for k in range(B.shape[0]):
+                if np.sum((syndrome @ B % 2) ^ B[k]) <= 2:
+                    buf = np.zeros(n, dtype=int)
+                    buf[k] = 1
+                    fix = np.append(buf, (syndrome @ B % 2) ^ B[k])
+                if fix is not None:
+                    break
 
         if fix is None:
             print('исправить не получылось')
@@ -90,7 +95,6 @@ def second(r, m, errors):
     print(f"\nПорождающая матрица:\n{G}")
     H = np.array([[1, 1], [1, -1]])
     w = np.random.randint(2, size=G.shape[0])
-    # w = np.array([1, 0, 1, 0, 1, 0, 1, 1])
     print(f'сообщение: {w}')
     w = w @ G % 2
     for kol_vo_oshibok in range(1, errors + 1):
@@ -114,10 +118,10 @@ def second(r, m, errors):
 
 
 def main():  # k-строки n-столбцы
-    # first()
+    first()
     # second(1, 3, 2)
     # print('============')
-    second(1, 4, 4)
+    # second(2, 4, 4)
 
 
 if __name__ == '__main__':
