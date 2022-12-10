@@ -3,7 +3,7 @@ import numpy as np
 
 def set_error(w, kol_vo_oshibok, пакет):
     word = np.copy(w)
-    idx=[]
+    idx = []
     if пакет:
         buff = np.random.randint(2, size=kol_vo_oshibok)
         if np.any(buff) == 0:
@@ -24,7 +24,6 @@ def set_error(w, kol_vo_oshibok, пакет):
 
 def is_error(x, t):
     buff = np.trim_zeros(np.copy(x))
-    print(buff)
     return len(buff) <= t and len(buff) != 0
 
 
@@ -33,10 +32,9 @@ def декодирование(w, g, n, t, пакет):
     print(f"синдром:\n{synd}")
     for i in range(n):
         s_i = np.int_(np.polydiv(np.polymul(np.eye(1, i + 1, dtype=int)[0], synd) % 2, g)[1] % 2)
-        if пакет:
-            if (пакет and is_error(s_i, t)) or (not пакет and np.sum(s_i) <= t):
-                return np.polyadd(np.polymul(np.eye(1, n - i + 1, dtype=int)[0], s_i) % 2, w) % 2 if i != 0 \
-                    else np.polyadd(s_i, w) % 2
+        if (пакет and is_error(s_i, t)) or (not пакет and np.sum(s_i) <= t):
+            return np.polyadd(np.polymul(np.eye(1, n - i + 1, dtype=int)[0], s_i) % 2, w) % 2 if i != 0 \
+                else np.polyadd(s_i, w) % 2
         # else:
         #     if np.sum(s_i) <= t:
         #         return np.polyadd(np.polymul(np.eye(1, n - i + 1, dtype=int)[0], s_i) % 2, w) % 2 if i != 0 \
@@ -60,7 +58,7 @@ def исследование(n, k, t, g, errors, пакет):
 def main():
     # print(f"\ng(x)=1 + x^2 + x^3")
     # исследование(7, 4, 1, np.array([1, 1, 0, 1]), 3, False)
-    print('====================================')
+    # print('====================================')
     print(f"\ng(x)=1 + x^3 + x^4 + x^5 + x^6")
     исследование(15, 9, 3, np.array([1, 1, 1, 1, 0, 0, 1]), 4, True)
 
